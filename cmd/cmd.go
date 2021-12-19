@@ -22,6 +22,7 @@ import (
 	"text/template"
 	"time"
 
+	"github.com/Masterminds/sprig/v3"
 	"github.com/fatih/color"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
@@ -250,7 +251,7 @@ func (o *options) sternConfig() (*stern.Config, error) {
 			return color.SprintFunc()(text)
 		},
 	}
-	template, err := template.New("log").Funcs(funs).Parse(t)
+	template, err := template.New("log").Funcs(sprig.TxtFuncMap()).Funcs(funs).Parse(t)
 	if err != nil {
 		return nil, errors.Wrap(err, "unable to parse template")
 	}
