@@ -6,6 +6,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.2.16
 	github.com/Masterminds/sprig/v3 v3.2.2
 	github.com/fatih/color v1.12.0
+	github.com/kr/logfmt v0.0.0-20140226030751-b84e30acd515
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.2.1
 	github.com/spf13/pflag v1.0.5

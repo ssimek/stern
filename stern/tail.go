@@ -29,6 +29,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+	"github.com/kr/logfmt"
 	corev1 "k8s.io/api/core/v1"
 	corev1client "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/rest"
@@ -242,8 +243,16 @@ func (t *Tail) Print(msg string) {
 		ContainerColor: t.containerColor,
 	}
 
-	// try parsing the message as JSON, but ignore any errors
-	json.Unmarshal([]byte(msg), &vm.JSON)
+	// try parsing the message as JSON and logfmt, but ignore any errors
+	data := []byte(msg)
+	json.Unmarshal(data, &vm.JSON)
+	logfmt.Unmarshal(data, logfmt.HandlerFunc(func(key, val []byte) error {
+		if vm.LogFmt == nil {
+			vm.LogFmt = make(map[string]interface{})
+		}
+		vm.LogFmt[string(key)] = string(val)
+		return nil
+	}))
 
 	var buf bytes.Buffer
 	if err := t.tmpl.Execute(&buf, vm); err != nil {
@@ -267,6 +276,9 @@ type Log struct {
 
 	// JSON is the log message parsed as JSON
 	JSON map[string]interface{} `json:"json,omitempty"`
+
+	// LogFmt is the log message parsed as LogFmt
+	LogFmt map[string]interface{} `json:"logfmt,omitempty"`
 
 	// Node name of the pod
 	NodeName string `json:"nodeName"`

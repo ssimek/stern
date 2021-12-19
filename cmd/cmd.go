@@ -253,6 +253,7 @@ func (o *options) sternConfig() (*stern.Config, error) {
 		"trace":       "TRC",
 		"verbose":     "VER",
 		"debug":       "DBG",
+		"info":        "",
 		"information": "",
 		"warning":     "WRN",
 		"error":       "ERR",
