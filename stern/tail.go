@@ -18,6 +18,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"hash/fnv"
@@ -241,6 +242,9 @@ func (t *Tail) Print(msg string) {
 		ContainerColor: t.containerColor,
 	}
 
+	// try parsing the message as JSON, but ignore any errors
+	json.Unmarshal([]byte(msg), &vm.JSON)
+
 	var buf bytes.Buffer
 	if err := t.tmpl.Execute(&buf, vm); err != nil {
 		fmt.Fprintf(t.errOut, "expanding template failed: %s\n", err)
@@ -260,6 +264,9 @@ func (t *Tail) isActive() bool {
 type Log struct {
 	// Message is the log message itself
 	Message string `json:"message"`
+
+	// JSON is the log message parsed as JSON
+	JSON map[string]interface{} `json:"json,omitempty"`
 
 	// Node name of the pod
 	NodeName string `json:"nodeName"`
