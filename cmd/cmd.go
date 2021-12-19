@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"strings"
 	"text/template"
 	"time"
 
@@ -232,6 +233,31 @@ func (o *options) sternConfig() (*stern.Config, error) {
 		t += "\n"
 	}
 
+	logColors := map[string]*color.Color{
+		"trace":   color.New(color.FgHiBlack),
+		"verbose": color.New(color.FgHiBlack),
+		"debug":   color.New(color.FgHiBlack),
+		"warning": color.New(color.FgHiYellow),
+		"error":   color.New(color.FgHiRed),
+	}
+
+	logTypeColors := map[string]*color.Color{
+		"trace":   color.New(color.FgHiBlack),
+		"verbose": color.New(color.FgHiBlack),
+		"debug":   color.New(color.FgHiBlack),
+		"warning": color.New(color.FgHiYellow),
+		"error":   color.New(color.BgHiRed, color.FgHiWhite),
+	}
+
+	logTypeText := map[string]string{
+		"trace":       "TRC",
+		"verbose":     "VER",
+		"debug":       "DBG",
+		"information": "",
+		"warning":     "WRN",
+		"error":       "ERR",
+	}
+
 	funs := map[string]interface{}{
 		"json": func(in interface{}) (string, error) {
 			b, err := json.Marshal(in)
@@ -249,6 +275,38 @@ func (o *options) sternConfig() (*stern.Config, error) {
 		},
 		"color": func(color color.Color, text string) string {
 			return color.SprintFunc()(text)
+		},
+		"logColor": func(logType string, text string) string {
+			clr := logColors[strings.ToLower(logType)]
+			if clr != nil {
+				return clr.SprintFunc()(text)
+			} else {
+				return text
+			}
+		},
+		"logTypeColor": func(logType string, text string) string {
+			clr := logTypeColors[strings.ToLower(logType)]
+			if clr != nil {
+				return clr.SprintFunc()(text)
+			} else {
+				return text
+			}
+		},
+		"logType": func(logType string) string {
+			logKey := strings.ToLower(logType)
+			text, known := logTypeText[logKey]
+			if !known {
+				text = logType
+			}
+			if text != "" {
+				clr := logTypeColors[logKey]
+				if clr != nil {
+					text = clr.Sprint(text)
+				}
+				return fmt.Sprintf("%s%s%s ", color.HiBlackString("["), text, color.HiBlackString("]"))
+			} else {
+				return ""
+			}
 		},
 	}
 	template, err := template.New("log").Funcs(sprig.TxtFuncMap()).Funcs(funs).Parse(t)
